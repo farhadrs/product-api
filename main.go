@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/labstack/echo"
 	"os"
 	"log"
 	"time"
@@ -24,6 +25,9 @@ func main() {
 	// create a new serve mux and register the handlers
 	sm := http.NewServeMux()
 	sm.Handle("/", ph)
+
+	// create a new server mux with echo framework and register handlers
+	e := echo.New()
 
 	// create a new server
 	s := http.Server{
