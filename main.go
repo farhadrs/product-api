@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/labstack/echo"
 	"os"
 	"log"
 	"time"
@@ -9,13 +8,15 @@ import (
 	"net/http"
 	"os/signal"
 	"product-api/handlers"
+	"github.com/gorilla/mux"
+	"github.com/env-master"
 	)
 
-//var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server")
+var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server")
 
 func main() {
 
-	//env.Parse()
+	env.Parse()
 
 	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
 
@@ -23,11 +24,20 @@ func main() {
 	ph := handlers.NewProducts(l)
 
 	// create a new serve mux and register the handlers
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
+	//sm := http.NewServeMux()
+	sm := mux.NewRouter()
 
-	// create a new server mux with echo framework and register handlers
-	e := echo.New()
+	getRouter := sm.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/", ph.GetProducts)
+
+	putRouter := sm.Methods("PUT").Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProduct)
+	//putRouter.Use(ph.MiddlewareProductValidation)
+
+	postRouter := sm.Methods("POST").Subrouter()
+	postRouter.HandleFunc("/", ph.AddProduct)
+	//sm.Handle("/products", ph)
+
 
 	// create a new server
 	s := http.Server{
